@@ -24,4 +24,19 @@ public class StockControllerTest
         StockResponse stockResponse = Assert.IsType<StockResponse>(okResult.Value);
         Assert.Equal(expectedPrice, stockResponse.Current);
     }
+
+    [Fact]
+    public async Task EnsureGetStockPrice_InvalidSymbol_ReturnsNotFound()
+    {
+        // Arrange
+        Mock<IStockService> mockStockService = new();
+        mockStockService.Setup(x => x.GetStockPrice(It.IsAny<string>())).ReturnsAsync((decimal?)null);
+        StockController controller = new(mockStockService.Object);
+
+        // Act
+        IActionResult result = await controller.GetStock("INVALID");
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
 }
