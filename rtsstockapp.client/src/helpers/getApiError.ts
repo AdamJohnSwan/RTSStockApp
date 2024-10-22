@@ -8,16 +8,13 @@ export async function getApiError(response: Response) {
     try {
         const json = JSON.parse(text);
         if (isValidationError(json)) {
-            let errors: string[] = []
-            for (const key in json.errors) {
-                errors = errors.concat(json.errors[key])
-            }
-            return new Error(errors.join());
+            const firstErrorKey = Object.keys(json.errors)[0];
+            return new Error(json.errors[firstErrorKey].join());
         } else if (isApiErrorResponse(json)) {
             return new Error(json.title);
         }
         return new Error(JSON.stringify(json));
-    } catch (e) {
+    } catch {
         return new Error(text);
     }
 }
