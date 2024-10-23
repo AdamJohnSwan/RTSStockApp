@@ -1,30 +1,23 @@
 import { fileURLToPath, URL } from 'node:url';
 
-import { defineConfig } from 'vite';
+import { CommonServerOptions, defineConfig } from 'vite';
 import plugin from '@vitejs/plugin-react';
 import fs from 'fs';
-import path from 'path';
-import child_process from 'child_process';
 import { env } from 'process';
 
-const baseFolder = `${env.HOME}/.aspnet/https`;
 
-const certificateName = "rtsstockapp.client";
-const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
-const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
+const certFilePath = env.VITE_CERT_FILE_PATH;
+const keyFilePath = env.VITE_KEY_FILE_PATH;
 
-if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
-    if (0 !== child_process.spawnSync('dotnet', [
-        'dev-certs',
-        'https',
-        '--export-path',
-        certFilePath,
-        '--format',
-        'Pem',
-        '--no-password',
-    ], { stdio: 'inherit', }).status) {
-        throw new Error("Could not create certificate. " + certFilePath);
+let https: CommonServerOptions["https"] | undefined = undefined;
+if (certFilePath && keyFilePath) {
+    if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
+        throw new Error("Cert paths defined but files do not exist.")
     }
+    https = {
+        key: fs.readFileSync(keyFilePath),
+        cert: fs.readFileSync(certFilePath),
+    };
 }
 
 const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
@@ -46,9 +39,6 @@ export default defineConfig({
             }
         },
         port: 5173,
-        https: {
-            key: fs.readFileSync(keyFilePath),
-            cert: fs.readFileSync(certFilePath),
-        }
+        https: https
     }
 })
