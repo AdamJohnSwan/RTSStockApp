@@ -10,12 +10,12 @@ public class FinnHubQuoteResponse
     /// <summary>
     /// Change
     /// </summary>
-    public decimal D { get; set; }
+    public decimal? D { get; set; }
 
     /// <summary>
     /// Percent change
     /// </summary>
-    public decimal Dp { get; set; }
+    public decimal? Dp { get; set; }
 
     /// <summary>
     /// High price of the day
